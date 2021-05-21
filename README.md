@@ -13,6 +13,10 @@
 
 ##### " %3a " 為 " - "。
 
+
+
 # 介面操作
 
 * 輸入病患 ID，並按下 getMedicationRequest 的按鍵。
+* 選擇 MedicationRequest，並按下該 MedicationRequest 的 confirm 按鍵。
+* 選擇想觀看的時間區段，並按下 getObservation 的按鍵。
