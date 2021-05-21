@@ -12,3 +12,7 @@
 ##### 心率的 LONIC Code 為 8867-4。
 
 ##### " %3a " 為 " - "。
+
+# 介面操作
+
+* 輸入病患 ID，並按下 getMedicationRequest 的按鍵。
