@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <title>Show</title>
+</head>
+<body>
+    <p>
+      FHIR Patient id：<input type="text"  id="FHIRPtionID" value="c6bc36a8-a1d1-4bf2-92b1-47bda16fd39a" size="35"/>
+      <input id="Button1" onclick="getMediationRequest()"  type="button" value="getMediationRequest"/>
+    </p>
+    <table id="MediationRequest" style="border: 1px solid black;" hidden>
+      <tr>
+          <th align="center" style="border: 1px solid black; width:100px;">Resource ID</th>
+          <th align="center" style="border: 1px solid black; width:250px;">Medication</th>
+          <th align="center" style="border: 1px solid black; width:130px;">Supply Duration</th>
+          <th align="center" style="border: 1px solid black; width:130px;">Repeats Allowed</th>
+          <th align="center" style="border: 1px solid black; width:150px;">Administering Time</th>
+          <th align="center" style="border: 1px solid black; width:150px;">Administering Way</th>
+          <th align="center" style="border: 1px solid black; width:170px;">Dispense Period</th>
+          <th align="center" style="border: 1px solid black; width:50px;"></th>
+      </tr>
+  </table>
+  <p></p>
+  <p id="date" hidden></p>
+  <p></p>
+  <table id="bodyPressure" style="border: 1px solid black;" align="left" hidden>
+      <tr>
+          <th align="center" style="border: 1px solid black; width:200px;">Measure Time</th>
+          <th align="center" style="border: 1px solid black; width:200px;">Distolic blood pressure</th>
+          <th align="center" style="border: 1px solid black; width:200px;">Systolic blood pressure</th>
+      </tr>
+  </table>
+  <table id="heartRate" style="border: 1px solid black;" align="left" hidden>
+    <tr>
+        <th align="center" style="border: 1px solid black; width:200px;">Measure Time</th>
+        <th align="center" style="border: 1px solid black; width:200px;">Heart Rate</th>
+    </tr>
+  </table>
+</body>
+<script>
+  var total=0;
+  function getMediationRequest() {
+    // https://fhir.dicom.tw/fhir/MedicationRequest?subject=c6bc36a8-a1d1-4bf2-92b1-47bda16fd39a
+    var apiURL = "https://fhir.dicom.tw/fhir/MedicationRequest?subject=" + document.getElementById("FHIRPtionID").value ;
+    var HttpObj = new XMLHttpRequest();   
+    var ret; 
+    HttpObj.onreadystatechange = function () {
+        if (HttpObj.readyState === 4) {
+            ret = HttpObj.responseText;
+            var k=0;
+            while(document.getElementById('Tr'+k)){
+              document.getElementById("MediationRequest").removeChild(document.getElementById('Tr'+k));
+              k++;
+            }
+            for(var i=0;i<JSON.parse(ret).entry.length;i++){
+                tr = document.createElement('tr');
+                tr.id="Tr"+JSON.parse(ret).entry[i].resource.id;
+                for(var j=0;j<8;j++){
+                    var td = document.createElement('td');
+                    td.id = 'Td'+JSON.parse(ret).entry[i].resource.id+"_"+j;
+                    td.style.border="1px solid black";
+                    tr.appendChild(td);
+                }
+                document.getElementById("MediationRequest").appendChild(tr);
+                document.getElementById('Td'+JSON.parse(ret).entry[i].resource.id+"_"+0).innerHTML 
+                          = JSON.parse(ret).entry[i].resource.id;
+                document.getElementById('Td'+JSON.parse(ret).entry[i].resource.id+"_"+1).innerHTML 
+                          = JSON.parse(ret).entry[i].resource.medicationCodeableConcept.coding[0].display;
+                document.getElementById('Td'+JSON.parse(ret).entry[i].resource.id+"_"+2).innerHTML 
+                          = JSON.parse(ret).entry[i].resource.dispenseRequest.expectedSupplyDuration.value 
+                          * JSON.parse(ret).entry[i].resource.dispenseRequest.numberOfRepeatsAllowed 
+                          + JSON.parse(ret).entry[i].resource.dispenseRequest.expectedSupplyDuration.unit;
+                document.getElementById('Td'+JSON.parse(ret).entry[i].resource.id+"_"+3).innerHTML
+                          = JSON.parse(ret).entry[i].resource.dispenseRequest.quantity.value
+                          * JSON.parse(ret).entry[i].resource.dispenseRequest.numberOfRepeatsAllowed
+                          + JSON.parse(ret).entry[i].resource.dispenseRequest.quantity.unit;
+                document.getElementById('Td'+JSON.parse(ret).entry[i].resource.id+"_"+4).innerHTML 
+                          = JSON.parse(ret).entry[i].resource.dosageInstruction[0].timing.code.coding[0].display;
+                document.getElementById('Td'+JSON.parse(ret).entry[i].resource.id+"_"+5).innerHTML 
+                          = JSON.parse(ret).entry[i].resource.dosageInstruction[0].route.coding[0].display;
+                document.getElementById('Td'+JSON.parse(ret).entry[i].resource.id+"_"+6).innerHTML 
+                          = JSON.parse(ret).entry[i].resource.dispenseRequest.validityPeriod.start+ " ~ "
+                          + JSON.parse(ret).entry[i].resource.dispenseRequest.validityPeriod.end;
+                total = JSON.parse(ret).entry[i].resource.dispenseRequest.expectedSupplyDuration.value 
+                      * JSON.parse(ret).entry[i].resource.dispenseRequest.numberOfRepeatsAllowed * 2;
+                var chooseButton = document.createElement('input');
+                chooseButton.id = JSON.parse(ret).entry[i].resource.id;
+                chooseButton.type = "button";
+                chooseButton.value = "confirm";
+                chooseButton.style.fontSize = window.innerHeight/63.1+"px";
+                document.getElementById('Td'+JSON.parse(ret).entry[i].resource.id+"_"+7).appendChild(chooseButton);
+                document.getElementById("MediationRequest").hidden=false;
+                document.getElementById(JSON.parse(ret).entry[i].resource.id).onclick=DateSelection;
+            }
+        }
+    }
+    HttpObj.open("GET", apiURL, true);
+    HttpObj.send();
+  } 
+
+  function DateSelection() {
+    document.getElementById("date").innerHTML=this.id + "：";
+    var chooseDate = document.createElement('input');
+    chooseDate.id = "from";
+    chooseDate.type = "date";
+    document.getElementById("date").appendChild(chooseDate);
+    document.getElementById("date").innerHTML+=" ~ ";
+    chooseDate.id = "to";
+    document.getElementById("date").appendChild(chooseDate);
+    document.getElementById("date").innerHTML+="  ";
+    var comfirmButton = document.createElement('input');
+    comfirmButton.id = "Button2";
+    comfirmButton.type = "button";
+    comfirmButton.value = "getObservation";
+    document.getElementById("date").appendChild(comfirmButton);
+    document.getElementById("date").hidden=false;
+    document.getElementById("Button2").onclick = getObservation;
+  }
+
+  function getObservation() {
+      P();
+      H();
+  } 
+    
+  function P(){
+    var apiURL = "https://fhir.dicom.tw/fhir/Observation?" 
+                + "subject=" + document.getElementById("FHIRPtionID").value 
+                + "&based-on=" + document.getElementById("date").innerHTML.split("：")[0]
+                + "&code=35094-2" 
+                + "&date=gt" + document.getElementById("from").value + "T00%3a00%3a01"
+                + "&date=lt" + document.getElementById("to").value + "T23%3a59%3a59";
+    var HttpObj = new XMLHttpRequest();   
+    var ret;
+    HttpObj.onreadystatechange = function () {
+        if (HttpObj.readyState === 4) {
+            ret = HttpObj.responseText;
+            var k=0;
+            while(document.getElementById('PTr'+k)){
+              document.getElementById("bodyPressure").removeChild(document.getElementById('PTr'+k));
+              k++;
+            }
+            if(JSON.parse(ret).entry!=null){
+              for(var i=0;i<JSON.parse(ret).entry.length;i++){
+                  tr = document.createElement('tr');
+                  tr.id="PTr"+i;
+                  for(var j=0;j<3;j++){
+                      var td = document.createElement('td');
+                      td.id = 'PTd'+i+j;
+                      td.style.border="1px solid black";
+                      td.style.width="200px";
+                      tr.appendChild(td);
+                  }
+                  document.getElementById("bodyPressure").appendChild(tr);
+                  document.getElementById('PTd'+i+0).innerHTML = JSON.parse(ret).entry[i].resource.effectiveDateTime;
+                  document.getElementById('PTd'+i+1).innerHTML = JSON.parse(ret).entry[i].resource.component[0].valueQuantity.value;
+                  document.getElementById('PTd'+i+2).innerHTML = JSON.parse(ret).entry[i].resource.component[1].valueQuantity.value;
+                  document.getElementById("bodyPressure").hidden=false;
+              }
+            }
+            else{
+              document.getElementById("bodyPressure").hidden=false;
+            }
+        }
+    }
+    HttpObj.open("GET", apiURL, true);
+    HttpObj.send();
+  }
+
+  function H(){
+    var apiURL = "https://fhir.dicom.tw/fhir/Observation?" 
+                 + "subject=" + document.getElementById("FHIRPtionID").value 
+                 + "&based-on=" + document.getElementById("date").innerHTML.split("：")[0]
+                 + "&code=8867-4" 
+                 + "&date=gt" + document.getElementById("from").value + "T00%3a00%3a01"
+                 + "&date=lt" + document.getElementById("to").value + "T23%3a59%3a59";
+    var HttpObj = new XMLHttpRequest();   
+    var ret;
+    HttpObj.onreadystatechange = function () {
+        if (HttpObj.readyState === 4) {
+            ret = HttpObj.responseText;
+            var k=0;
+            while(document.getElementById('HTr'+k)){
+              document.getElementById("heartRate").removeChild(document.getElementById('HTr'+k));
+              k++;
+            }
+            if(JSON.parse(ret).entry!=null){
+              for(var i=0;i<JSON.parse(ret).entry.length;i++){
+                  tr = document.createElement('tr');
+                  tr.id="HTr"+i;
+                  for(var j=0;j<2;j++){
+                      var td = document.createElement('td');
+                      td.id = 'HTd'+i+j;
+                      td.style.border="1px solid black";
+                      td.style.width="200px";
+                      tr.appendChild(td);
+                  }
+                  document.getElementById("heartRate").appendChild(tr);
+                  document.getElementById('HTd'+i+0).innerHTML = JSON.parse(ret).entry[i].resource.effectiveDateTime;
+                  document.getElementById('HTd'+i+1).innerHTML = JSON.parse(ret).entry[i].resource.valueQuantity.value;
+                  document.getElementById("heartRate").hidden=false;
+              }
+            }
+            else{
+              document.getElementById("heartRate").hidden=false;
+            }
+        }
+    }
+    HttpObj.open("GET", apiURL, true);
+    HttpObj.send();
+  }
+</script>	
+</html>
