@@ -130,7 +130,7 @@
                 + "&code=35094-2" 
                 + "&date=gt" + document.getElementById("from").value + "T00%3a00%3a01"
                 + "&date=lt" + document.getElementById("to").value + "T23%3a59%3a59"
-                + "_count=" + document.getElementById('Td'+document.getElementById("date").innerHTML.split("：")[0]+"_"+2).value*2;
+                + "+_count=" + total;
     var HttpObj = new XMLHttpRequest();   
     var ret;
     HttpObj.onreadystatechange = function () {
@@ -175,7 +175,7 @@
                  + "&code=8867-4" 
                  + "&date=gt" + document.getElementById("from").value + "T00%3a00%3a01"
                  + "&date=lt" + document.getElementById("to").value + "T23%3a59%3a59"
-                 + "_count=" + document.getElementById('Td'+document.getElementById("date").innerHTML.split("：")[0]+"_"+2).value*2;
+                 + "+_count=" + total;
     var HttpObj = new XMLHttpRequest();   
     var ret;
     HttpObj.onreadystatechange = function () {
