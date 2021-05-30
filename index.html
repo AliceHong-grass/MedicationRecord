@@ -174,7 +174,8 @@
                  + "&based-on=" + document.getElementById("date").innerHTML.split("：")[0]
                  + "&code=8867-4" 
                  + "&date=gt" + document.getElementById("from").value + "T00%3a00%3a01"
-                 + "&date=lt" + document.getElementById("to").value + "T23%3a59%3a59";
+                 + "&date=lt" + document.getElementById("to").value + "T23%3a59%3a59"
+                 + "&_count=" + total;
     var HttpObj = new XMLHttpRequest();   
     var ret;
     HttpObj.onreadystatechange = function () {
