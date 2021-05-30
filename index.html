@@ -180,7 +180,7 @@
     var ret;
     HttpObj.onreadystatechange = function () {
         if (HttpObj.readyState === 4) {
-            ret = HttpObj.responseText;
+            ret = HttpObj.responseText; 
             var k=0;
             while(document.getElementById('HTr'+k)){
               document.getElementById("heartRate").removeChild(document.getElementById('HTr'+k));
